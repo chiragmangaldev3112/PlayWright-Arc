@@ -1,0 +1,120 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment files
+# .env
+# .env.local
+# .env.development
+# .env.test
+# .env.production
+
+# Test results and reports
+test-results/
+playwright-report/
+reports/
+screenshots/
+videos/
+logs/
+allure-results/
+allure-report/
+
+# Coverage reports
+coverage/
+.nyc_output/
+
+# Build outputs
+dist/
+build/
+out/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+.tmp/
+.temp/
+
+# Cache directories
+.cache/
+.parcel-cache/
+.eslintcache
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Optional npm cache directory
+.npm
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# dotenv environment variables file
+.env.test.local
+
+# Playwright browsers (optional - uncomment if you want to exclude)
+# /ms-playwright/
+
+# Test artifacts that should not be committed
+test-data/generated/
+test-data/temp/
+test-data/*.tmp
+
+# Backup files
+*.bak
+*.backup
+
+# Lock files (choose one based on your package manager preference)
+# package-lock.json  # Uncomment if using yarn
+# yarn.lock          # Uncomment if using npm
+
+# Local configuration overrides
+config/local.json
+config/development.json
+config/test.json
+
+# Debug logs
+debug.log
+error.log
+combined.log
+
+# Playwright state
+.auth/
+
+# TypeScript build info
+*.tsbuildinfo
+
+# ESLint cache
+.eslintcache
+
+# Prettier cache
+.prettiercache
+
+# Husky
+.husky/_

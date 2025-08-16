@@ -1,0 +1,62 @@
+{
+  "name": "playwright-typescript-automation-framework",
+  "version": "1.0.0",
+  "description": "Enterprise-grade test automation framework using Playwright with TypeScript",
+  "main": "index.js",
+  "scripts": {
+    "test": "playwright test",
+    "test:web": "playwright test --grep @web",
+    "test:api": "playwright test --grep @api",
+    "test:mobile": "playwright test --grep @mobile",
+    "test:all": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:debug": "playwright test --debug",
+    "test:ui": "playwright test --ui",
+    "test:report": "playwright show-report",
+    "test:trace": "playwright show-trace",
+    "codegen": "./scripts/codegen-wrapper.sh",
+    "codegen:interactive": "./scripts/codegen-wrapper.sh -i",
+    "codegen:full": "./scripts/codegen-wrapper.sh -p",
+    "lint": "eslint . --ext .ts,.js --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "install:browsers": "playwright install",
+    "install:deps": "playwright install-deps",
+    "clean:reports": "rm -rf playwright-report test-results allure-results",
+    "pretest": "npm run lint && npm run format:check",
+    "posttest": "npm run test:report"
+  },
+  "keywords": [
+    "playwright",
+    "typescript",
+    "automation",
+    "testing",
+    "e2e",
+    "api-testing",
+    "mobile-testing",
+    "enterprise"
+  ],
+  "author": "Enterprise Automation Team",
+  "license": "MIT",
+  "devDependencies": {
+    "@playwright/test": "^1.40.0",
+    "@types/node": "^20.10.0",
+    "@typescript-eslint/eslint-plugin": "^6.13.0",
+    "@typescript-eslint/parser": "^6.13.0",
+    "allure-playwright": "^2.10.0",
+    "dotenv": "^16.3.1",
+    "eslint": "^8.54.0",
+    "eslint-config-prettier": "^9.0.0",
+    "eslint-plugin-playwright": "^0.18.0",
+    "eslint-plugin-prettier": "^5.0.1",
+    "prettier": "^3.1.0",
+    "typescript": "^5.3.0"
+  },
+  "dependencies": {
+    "winston": "^3.11.0"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  }
+}

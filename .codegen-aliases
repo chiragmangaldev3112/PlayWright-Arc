@@ -1,0 +1,17 @@
+# 🔒 Playwright Codegen Aliases - Forces Standard Templates
+# Source this file in your shell profile to enforce codegen standards
+
+# Override playwright codegen command
+alias playwright-codegen='/Users/baljeetkaur/Documents/Projects/playwrite-arc/scripts/simple-codegen.sh'
+alias npx-playwright-codegen='/Users/baljeetkaur/Documents/Projects/playwrite-arc/scripts/simple-codegen.sh'
+
+# Convenience aliases
+alias codegen='/Users/baljeetkaur/Documents/Projects/playwrite-arc/scripts/simple-codegen.sh'
+alias gen-test='/Users/baljeetkaur/Documents/Projects/playwrite-arc/scripts/simple-codegen.sh'
+alias record-test='/Users/baljeetkaur/Documents/Projects/playwrite-arc/scripts/simple-codegen.sh'
+
+# Quick codegen with page objects
+alias codegen-full='/Users/baljeetkaur/Documents/Projects/playwrite-arc/scripts/simple-codegen.sh -p'
+
+echo "🔒 Codegen standards enforcement aliases loaded"
+echo "Use 'codegen <URL>' instead of 'npx playwright codegen <URL>'"

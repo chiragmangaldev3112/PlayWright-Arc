@@ -1,0 +1,166 @@
+name: Playwright Tests
+
+on:
+  push:
+    branches: [ main, develop ]
+  pull_request:
+    branches: [ main, develop ]
+  schedule:
+    # Run tests daily at 2 AM UTC
+    - cron: '0 2 * * *'
+
+jobs:
+  test:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    
+    strategy:
+      fail-fast: false
+      matrix:
+        project: [chromium, firefox, webkit]
+        
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Install Playwright Browsers
+      run: npx playwright install --with-deps ${{ matrix.project }}
+
+    - name: Create test directories
+      run: |
+        mkdir -p test-data
+        mkdir -p reports
+        mkdir -p screenshots
+        mkdir -p logs
+
+    - name: Setup environment variables
+      run: |
+        cp .env.example .env.local
+        echo "NODE_ENV=ci" >> .env.local
+        echo "HEADLESS=true" >> .env.local
+        echo "BASE_URL=${{ secrets.BASE_URL || 'https://demo-app.com' }}" >> .env.local
+        echo "API_BASE_URL=${{ secrets.API_BASE_URL || 'https://api.demo-app.com' }}" >> .env.local
+
+    - name: Run Playwright tests
+      run: npx playwright test --project=${{ matrix.project }}
+      env:
+        CI: true
+
+    - name: Upload test results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: playwright-results-${{ matrix.project }}
+        path: |
+          playwright-report/
+          test-results/
+          reports/
+          screenshots/
+        retention-days: 30
+
+    - name: Upload HTML report
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: playwright-report-${{ matrix.project }}
+        path: playwright-report/
+        retention-days: 30
+
+  # Combine reports from all browsers
+  merge-reports:
+    if: always()
+    needs: [test]
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+
+    - name: Install dependencies
+      run: npm ci
+
+    - name: Download all reports
+      uses: actions/download-artifact@v4
+      with:
+        path: all-reports
+
+    - name: Merge HTML reports
+      run: |
+        npx playwright merge-reports --reporter html all-reports/playwright-results-*/
+      continue-on-error: true
+
+    - name: Upload merged report
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: merged-playwright-report
+        path: playwright-report/
+        retention-days: 30
+
+  # Deploy report to GitHub Pages (optional)
+  deploy-report:
+    if: always() && github.ref == 'refs/heads/main'
+    needs: [merge-reports]
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+    - name: Download merged report
+      uses: actions/download-artifact@v4
+      with:
+        name: merged-playwright-report
+        path: playwright-report
+
+    - name: Setup Pages
+      uses: actions/configure-pages@v4
+
+    - name: Upload to GitHub Pages
+      uses: actions/upload-pages-artifact@v3
+      with:
+        path: playwright-report
+
+    - name: Deploy to GitHub Pages
+      id: deployment
+      uses: actions/deploy-pages@v4
+
+  # Slack notification (optional)
+  notify:
+    if: always()
+    needs: [test]
+    runs-on: ubuntu-latest
+    steps:
+    - name: Notify Slack on failure
+      if: failure()
+      uses: 8398a7/action-slack@v3
+      with:
+        status: failure
+        text: 'Playwright tests failed! Check the GitHub Actions for details.'
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+    - name: Notify Slack on success
+      if: success()
+      uses: 8398a7/action-slack@v3
+      with:
+        status: success
+        text: 'All Playwright tests passed successfully! ✅'
+      env:
+        SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

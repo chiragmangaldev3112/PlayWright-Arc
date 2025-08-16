@@ -1,0 +1,95 @@
+version: '3.8'
+
+services:
+  playwright-tests:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: playwright-automation
+    environment:
+      - NODE_ENV=${NODE_ENV:-test}
+      - HEADLESS=${HEADLESS:-true}
+      - BASE_URL=${BASE_URL:-https://demo-app.com}
+      - API_BASE_URL=${API_BASE_URL:-https://api.demo-app.com}
+      - MAX_WORKERS=${MAX_WORKERS:-4}
+      - RETRIES=${RETRIES:-2}
+      - BROWSER_TIMEOUT=${BROWSER_TIMEOUT:-30000}
+    volumes:
+      - ./test-results:/app/test-results
+      - ./playwright-report:/app/playwright-report
+      - ./screenshots:/app/screenshots
+      - ./logs:/app/logs
+      - ./allure-results:/app/allure-results
+    networks:
+      - playwright-network
+    command: npm test
+    
+  # Optional: Run tests against different browsers in parallel
+  playwright-chromium:
+    extends: playwright-tests
+    container_name: playwright-chromium
+    command: npx playwright test --project=chromium
+    
+  playwright-firefox:
+    extends: playwright-tests
+    container_name: playwright-firefox
+    command: npx playwright test --project=firefox
+    
+  playwright-webkit:
+    extends: playwright-tests
+    container_name: playwright-webkit
+    command: npx playwright test --project=webkit
+
+  # Optional: Allure reporting service
+  allure-server:
+    image: frankescobar/allure-docker-service
+    container_name: allure-reports
+    ports:
+      - "5050:5050"
+    environment:
+      CHECK_RESULTS_EVERY_SECONDS: 3
+      KEEP_HISTORY: 20
+    volumes:
+      - ./allure-results:/app/allure-results
+      - ./allure-reports:/app/default-reports
+    networks:
+      - playwright-network
+    depends_on:
+      - playwright-tests
+
+  # Optional: Test data database for complex scenarios
+  test-db:
+    image: postgres:15-alpine
+    container_name: test-database
+    environment:
+      POSTGRES_DB: testdb
+      POSTGRES_USER: testuser
+      POSTGRES_PASSWORD: testpass
+    ports:
+      - "5432:5432"
+    volumes:
+      - test-db-data:/var/lib/postgresql/data
+      - ./test-data/sql:/docker-entrypoint-initdb.d
+    networks:
+      - playwright-network
+
+  # Optional: Mock API server for isolated testing
+  mock-api:
+    image: mockserver/mockserver:latest
+    container_name: mock-api-server
+    ports:
+      - "1080:1080"
+    environment:
+      MOCKSERVER_PROPERTY_FILE: /config/mockserver.properties
+    volumes:
+      - ./mock-data:/config
+    networks:
+      - playwright-network
+
+networks:
+  playwright-network:
+    driver: bridge
+
+volumes:
+  test-db-data:
+    driver: local

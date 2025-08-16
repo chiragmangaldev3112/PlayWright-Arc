@@ -1,0 +1,85 @@
+[
+  {
+    "id": "login_valid_admin",
+    "scenario": "Valid Admin Login",
+    "data": {
+      "username": "admin@example.com",
+      "password": "AdminPassword123!",
+      "expectedRole": "admin",
+      "expectedRedirect": "/dashboard"
+    },
+    "tags": [
+      "login",
+      "admin",
+      "positive"
+    ],
+    "priority": "high"
+  },
+  {
+    "id": "login_valid_user",
+    "scenario": "Valid User Login",
+    "data": {
+      "username": "user@example.com",
+      "password": "UserPassword123!",
+      "expectedRole": "user",
+      "expectedRedirect": "/profile"
+    },
+    "tags": [
+      "login",
+      "user",
+      "positive"
+    ],
+    "priority": "high"
+  },
+  {
+    "id": "login_invalid_credentials",
+    "scenario": "Invalid Login Credentials",
+    "data": {
+      "username": "invalid@example.com",
+      "password": "WrongPassword",
+      "expectedError": "Invalid credentials"
+    },
+    "tags": [
+      "login",
+      "negative"
+    ],
+    "priority": "medium"
+  },
+  {
+    "id": "registration_valid",
+    "scenario": "Valid User Registration",
+    "data": {
+      "firstName": "John",
+      "lastName": "Doe",
+      "email": "john.doe@example.com",
+      "password": "SecurePassword123!",
+      "confirmPassword": "SecurePassword123!",
+      "acceptTerms": true
+    },
+    "tags": [
+      "registration",
+      "positive"
+    ],
+    "priority": "high"
+  },
+  {
+    "id": "api_users_get",
+    "scenario": "Get Users API",
+    "data": {
+      "endpoint": "/users",
+      "method": "GET",
+      "expectedStatus": 200,
+      "expectedFields": [
+        "id",
+        "name",
+        "email"
+      ]
+    },
+    "tags": [
+      "api",
+      "users",
+      "get"
+    ],
+    "priority": "high"
+  }
+]
