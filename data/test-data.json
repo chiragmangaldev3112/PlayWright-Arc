@@ -1,85 +1,132 @@
 [
   {
-    "id": "login_valid_admin",
-    "scenario": "Valid Admin Login",
-    "data": {
-      "username": "admin@example.com",
-      "password": "AdminPassword123!",
-      "expectedRole": "admin",
-      "expectedRedirect": "/dashboard"
-    },
-    "tags": [
-      "login",
-      "admin",
-      "positive"
-    ],
-    "priority": "high"
+    "pageName": "AuthApi",
+    "folder": "auth",
+    "baseRoute": "/auth",
+    "cases": [
+      {
+        "methodName": "login",
+        "description": "Login with valid credentials",
+        "method": "POST",
+        "data": {
+          "username": "string",
+          "password": "string"
+        },
+        "expectStatus": 200,
+        "tags": ["@critical", "@auth", "@smoke"],
+        "validations": [
+          {
+            "description": "Login with empty username",
+            "data": { "username": "", "password": "string" },
+            "expectStatus": 400,
+            "messageKey": "error.emptyUsername",
+            "tags": ["@high", "@auth", "@regression"]
+          },
+          {
+            "description": "Login with empty password",
+            "data": { "username": "string", "password": "" },
+            "expectStatus": 400,
+            "messageKey": "error.emptyPassword",
+            "tags": ["@high", "@auth", "@regression"]
+          }
+        ]
+      },
+      {
+        "methodName": "logout",
+        "description": "Logout current user",
+        "method": "POST",
+        "expectStatus": 200,
+        "tags": ["@medium", "@auth", "@smoke"]
+      }
+    ]
   },
   {
-    "id": "login_valid_user",
-    "scenario": "Valid User Login",
-    "data": {
-      "username": "user@example.com",
-      "password": "UserPassword123!",
-      "expectedRole": "user",
-      "expectedRedirect": "/profile"
-    },
-    "tags": [
-      "login",
-      "user",
-      "positive"
-    ],
-    "priority": "high"
-  },
-  {
-    "id": "login_invalid_credentials",
-    "scenario": "Invalid Login Credentials",
-    "data": {
-      "username": "invalid@example.com",
-      "password": "WrongPassword",
-      "expectedError": "Invalid credentials"
-    },
-    "tags": [
-      "login",
-      "negative"
-    ],
-    "priority": "medium"
-  },
-  {
-    "id": "registration_valid",
-    "scenario": "Valid User Registration",
-    "data": {
-      "firstName": "John",
-      "lastName": "Doe",
-      "email": "john.doe@example.com",
-      "password": "SecurePassword123!",
-      "confirmPassword": "SecurePassword123!",
-      "acceptTerms": true
-    },
-    "tags": [
-      "registration",
-      "positive"
-    ],
-    "priority": "high"
-  },
-  {
-    "id": "api_users_get",
-    "scenario": "Get Users API",
-    "data": {
-      "endpoint": "/users",
-      "method": "GET",
-      "expectedStatus": 200,
-      "expectedFields": [
-        "id",
-        "name",
-        "email"
-      ]
-    },
-    "tags": [
-      "api",
-      "users",
-      "get"
-    ],
-    "priority": "high"
+    "pageName": "UserApi",
+    "folder": "user",
+    "baseRoute": "/users",
+    "cases": [
+      {
+        "methodName": "getUser",
+        "description": "Get user by ID",
+        "method": "GET",
+        "params": {
+          "id": 1
+        },
+        "expectStatus": 200,
+        "tags": ["@high", "@ui", "@smoke"],
+        "validations": [
+          {
+            "description": "Get user with invalid ID",
+            "params": { "id": 99999 },
+            "expectStatus": 404,
+            "messageKey": "error.userNotFound",
+            "tags": ["@medium", "@ui", "@regression"]
+          }
+        ]
+      },
+      {
+        "methodName": "createUser",
+        "description": "Create a new user",
+        "method": "POST",
+        "data": {
+          "username": "string",
+          "email": "string"
+        },
+        "expectStatus": 201,
+        "tags": ["@critical", "@ui", "@e2e"],
+        "validations": [
+          {
+            "description": "Create user with missing email",
+            "data": { "username": "string" },
+            "expectStatus": 400,
+            "messageKey": "error.missingEmail",
+            "tags": ["@high", "@ui", "@regression"]
+          }
+        ]
+      },
+      {
+        "methodName": "updateUser",
+        "description": "Update existing user",
+        "method": "PUT",
+        "data": {
+          "username": "string",
+          "email": "string"
+        },
+        "params": {
+          "id": 1
+        },
+        "expectStatus": 200,
+        "tags": ["@high", "@ui", "@regression"],
+        "validations": [
+          {
+            "description": "Update user with invalid ID",
+            "params": { "id": 99999 },
+            "data": { "username": "string", "email": "string" },
+            "expectStatus": 404,
+            "messageKey": "error.userNotFound",
+            "tags": ["@medium", "@ui", "@regression"]
+          }
+        ]
+      },
+      {
+        "methodName": "deleteUser",
+        "description": "Delete user by ID",
+        "method": "DELETE",
+        "params": {
+          "id": 1
+        },
+        "expectStatus": 204,
+        "tags": ["@medium", "@ui", "@regression"],
+        "validations": [
+          {
+            "description": "Delete non-existent user",
+            "params": { "id": 99999 },
+            "expectStatus": 404,
+            "messageKey": "error.userNotFound",
+            "tags": ["@low", "@ui", "@regression"]
+          }
+        ]
+      }
+    ]
   }
 ]

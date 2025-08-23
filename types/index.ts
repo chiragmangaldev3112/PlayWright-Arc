@@ -148,7 +148,7 @@ export interface ApiRequestConfig {
   url: string;
   headers?: Record<string, string>;
   data?: unknown;
-  params?: Record<string, string | number>;
+  params?: unknown;
   timeout?: number;
 }
 

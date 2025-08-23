@@ -67,57 +67,7 @@ export class BaseApi {
     logger.debug('Authentication token cleared');
   }
 
-  /**
-   * Login and set authentication token
-   * @param credentials - User credentials
-   * @returns Promise<string> - Authentication token
-   */
-  public async login(credentials: UserCredentials): Promise<string> {
-    logger.info(`Logging in user: ${credentials.username}`);
-
-    try {
-      const response = await this.post('/auth/login', {
-        username: credentials.username,
-        password: credentials.password,
-      });
-
-      await this.expectSuccessResponse(response);
-      const responseData = await response.json();
-      
-      if (!responseData.token) {
-        throw new Error('No authentication token received in login response');
-      }
-
-      this.setAuthToken(responseData.token);
-      logger.info(`Successfully logged in user: ${credentials.username}`);
-      
-      return responseData.token;
-    } catch (error) {
-      logger.error(`Login failed for user: ${credentials.username}`, error);
-      throw error;
-    }
-  }
-
-  /**
-   * Logout and clear authentication token
-   * @returns Promise<void>
-   */
-  public async logout(): Promise<void> {
-    if (!this.authToken) {
-      logger.debug('No authentication token to logout');
-      return;
-    }
-
-    try {
-      await this.post('/auth/logout');
-      this.clearAuthToken();
-      logger.info('Successfully logged out');
-    } catch (error) {
-      logger.error('Logout failed', error);
-      this.clearAuthToken(); // Clear token even if logout fails
-      throw error;
-    }
-  }
+  
 
   // =============================================================================
   // HTTP REQUEST METHODS
@@ -126,14 +76,16 @@ export class BaseApi {
   /**
    * Make GET request
    * @param endpoint - API endpoint
+   * @param data - Request data (optional, for query params or body)
    * @param options - Request options
    * @returns Promise<APIResponse> - API response
    */
   public async get(
     endpoint: string,
-    options: Partial<Omit<ApiRequestConfig, 'method' | 'data' | 'url'>> = {}
+    data?: unknown,
+    options: Partial<Omit<ApiRequestConfig, 'method' | 'url'>> = {}
   ): Promise<APIResponse> {
-    return this.makeRequest(HttpMethod.GET, endpoint, { ...options });
+    return this.makeRequest(HttpMethod.GET, endpoint, { data, ...options });
   }
 
   /**
@@ -184,14 +136,16 @@ export class BaseApi {
   /**
    * Make DELETE request
    * @param endpoint - API endpoint
+   * @param data - Request data (optional)
    * @param options - Request options
    * @returns Promise<APIResponse> - API response
    */
   public async delete(
     endpoint: string,
-    options: Partial<Omit<ApiRequestConfig, 'method' | 'data' | 'url'>> = {}
+    data?: unknown,
+    options: Partial<Omit<ApiRequestConfig, 'method' | 'url'>> = {}
   ): Promise<APIResponse> {
-    return this.makeRequest(HttpMethod.DELETE, endpoint, { ...options });
+    return this.makeRequest(HttpMethod.DELETE, endpoint, { data, ...options });
   }
 
   // =============================================================================

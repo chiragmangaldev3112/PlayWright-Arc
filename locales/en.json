@@ -1,0 +1,8 @@
+{
+  "error": {
+    "emptyUsername": "error.emptyUsername",
+    "emptyPassword": "error.emptyPassword",
+    "userNotFound": "error.userNotFound",
+    "missingEmail": "error.missingEmail"
+  }
+}
