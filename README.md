@@ -843,3 +843,5 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 - **[QUICK_REFERENCE.md](./QUICK_REFERENCE.md)** - Quick reference guide for common commands and operations
 
 **Happy Testing! 🎉**
+
+node --experimental-loader=ts-node/esm ./scripts/generate-test.ts ./data/test-data.json
