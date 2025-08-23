@@ -1,42 +1,38 @@
 export interface GetUserQuery {
-  id: number;
+  id?: number | null;
 }
 
 export interface GetUserValidation1Query {
-  id: number;
+  id?: number | null;
 }
 
 export interface CreateUserRequest {
-  username: string;
-  email: string;
+  username?: string | null;
+  email?: string | null;
 }
 
 export interface CreateUserValidation1Request {
-  username: string;
+  username?: string | null;
+  email?: any | null | null;
 }
 
 export interface UpdateUserRequest {
-  username: string;
-  email: string;
+  username?: string | null;
+  email?: string | null;
 }
 
 export interface UpdateUserQuery {
-  id: number;
-}
-
-export interface UpdateUserValidation1Request {
-  username: string;
-  email: string;
+  id?: number | null;
 }
 
 export interface UpdateUserValidation1Query {
-  id: number;
+  id?: number | null;
 }
 
 export interface DeleteUserQuery {
-  id: number;
+  id?: number | null;
 }
 
 export interface DeleteUserValidation1Query {
-  id: number;
+  id?: number | null;
 }

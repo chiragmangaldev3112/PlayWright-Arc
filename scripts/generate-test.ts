@@ -34,7 +34,7 @@ interface ApiDefinition {
 }
 
 // ========================
-// i18n Helper (Integrated)
+// i18n Helper
 // ========================
 const LOCALE_DIR = path.join(process.cwd(), 'locales');
 const LOCALE_FILE = path.join(LOCALE_DIR, 'en.json');
@@ -45,9 +45,7 @@ function ensureLocaleDir() {
 
 function loadI18n(): Record<string, any> {
   ensureLocaleDir();
-  if (!fs.existsSync(LOCALE_FILE)) {
-    fs.writeFileSync(LOCALE_FILE, '{}', 'utf-8');
-  }
+  if (!fs.existsSync(LOCALE_FILE)) fs.writeFileSync(LOCALE_FILE, '{}', 'utf-8');
   return JSON.parse(fs.readFileSync(LOCALE_FILE, 'utf-8'));
 }
 
@@ -55,35 +53,26 @@ function saveI18n(data: Record<string, any>) {
   fs.writeFileSync(LOCALE_FILE, JSON.stringify(data, null, 2), 'utf-8');
 }
 
-/**
- * Add a key (supports dot notation) if missing
- */
 function addI18nKey(key: string) {
-    const i18n: Record<string, any> = loadI18n();
-    const parts = key.split('.');
-    let current: Record<string, any> = i18n;
-  
-    parts.forEach((part, index) => {
-      if (!part) return; // skip empty parts just in case
-  
-      if (index === parts.length - 1) {
-        // Last part: assign default value if missing
-        if (!(part in current)) {
-          current[part] = key;
-        }
-      } else {
-        // Intermediate part: ensure it's an object
-        if (!(part in current) || typeof current[part] !== 'object' || current[part] === null) {
-          current[part] = {};
-        }
-        current = current[part];
+  const i18n: Record<string, any> = loadI18n();
+  const parts = key.split('.');
+  let current: Record<string, any> = i18n;
+
+  parts.forEach((part, index) => {
+    if (!part) return;
+    if (index === parts.length - 1) {
+      if (!(part in current)) current[part] = key;
+    } else {
+      if (!(part in current) || typeof current[part] !== 'object' || current[part] === null) {
+        current[part] = {};
       }
-    });
-  
-    saveI18n(i18n);
-  }
-  
-  
+      current = current[part];
+    }
+  });
+
+  saveI18n(i18n);
+}
+
 // ========================
 // Validation
 // ========================
@@ -108,47 +97,86 @@ function validateApi(api: any): ApiDefinition {
 }
 
 // ========================
-// Generate Unique Models
+// Generate Models
 // ========================
 function generateModels(api: ApiDefinition) {
   const interfaces: Record<string, Record<string, any>> = {};
+  const validationMap: Record<string, Array<{ data: string; params: string }>> = {};
 
   const addInterface = (name: string, data: Record<string, any>) => {
     if (!interfaces[name]) interfaces[name] = data;
   };
 
-  const processCase = (tc: ApiCase) => {
-    if (tc.data) addInterface(`${capitalize(tc.methodName)}Request`, tc.data);
-    if (tc.params) addInterface(`${capitalize(tc.methodName)}Query`, tc.params);
+  api.cases.forEach((tc) => {
+    const mainDataName = tc.data ? `${capitalize(tc.methodName)}Request` : '';
+    const mainParamsName = tc.params ? `${capitalize(tc.methodName)}Query` : '';
+
+    if (tc.data) addInterface(mainDataName, tc.data);
+    if (tc.params) addInterface(mainParamsName, tc.params);
+
     if (tc.validations) {
+      if (!validationMap[tc.methodName]) validationMap[tc.methodName] = [];
       tc.validations.forEach((val, idx) => {
-        if (val.data) addInterface(`${capitalize(tc.methodName)}Validation${idx + 1}Request`, val.data);
-        if (val.params) addInterface(`${capitalize(tc.methodName)}Validation${idx + 1}Query`, val.params);
+        let valDataName = 'any';
+        let valParamsName = 'any';
+
+        if (val.data) {
+          valDataName =
+            JSON.stringify(val.data) === JSON.stringify(tc.data)
+              ? mainDataName
+              : `${capitalize(tc.methodName)}Validation${idx + 1}Request`;
+          addInterface(valDataName, val.data);
+        }
+
+        if (val.params) {
+          valParamsName =
+            JSON.stringify(val.params) === JSON.stringify(tc.params)
+              ? mainParamsName
+              : `${capitalize(tc.methodName)}Validation${idx + 1}Query`;
+          addInterface(valParamsName, val.params);
+        }
+
+        validationMap[tc.methodName]?.push({ data: valDataName, params: valParamsName });
       });
     }
-  };
+  });
 
-  api.cases.forEach(processCase);
-
+  // Generate TypeScript interfaces with optional & nullable fields
   const modelLines: string[] = [];
   Object.entries(interfaces).forEach(([name, fields]) => {
     let body = '{\n';
     for (const key in fields) {
-      const type = typeof fields[key];
-      body += `  ${key}: ${type === 'number' ? 'number' : type === 'boolean' ? 'boolean' : 'string'};\n`;
+      const value = fields[key];
+      let type: string;
+
+      if (value === null) type = 'any | null'; // treat null as any | null
+      else {
+        const jsType = typeof value;
+        type = jsType === 'number' ? 'number' : jsType === 'boolean' ? 'boolean' : 'string';
+      }
+
+      // Make field optional and nullable
+      body += `  ${key}?: ${type} | null;\n`;
     }
     body += '}';
     modelLines.push(`export interface ${name} ${body}`);
   });
 
-  return { modelFileName: `${api.pageName}Models.ts`, content: modelLines.join('\n\n') };
+  return {
+    modelFileName: `${api.pageName}Models.ts`,
+    content: modelLines.join('\n\n'),
+    validationMap,
+  };
 }
+
+
+
 
 // ========================
 // Generate Page Class
 // ========================
 function generatePageClass(api: ApiDefinition) {
-  const imports: string[] = [
+  const imports = [
     `import { BaseApi } from '../base-api';`,
     `import type { APIRequestContext } from '@playwright/test';`,
     `import type * as Models from './${api.pageName}Models';`
@@ -184,7 +212,10 @@ export class ${api.pageName} extends BaseApi {
 // ========================
 // Generate Test File
 // ========================
-function generateTestFile(api: ApiDefinition) {
+function generateTestFile(
+  api: ApiDefinition,
+  validationMap: Record<string, Array<{ data: string; params: string }>>
+) {
   const folderPath = api.folder ? `${api.folder}/` : '';
   const imports = `import { test, expect } from '@playwright/test';
 import { ${api.pageName} } from '@api/${folderPath}${api.pageName}';
@@ -193,46 +224,69 @@ import { I18n } from '@utils/i18n/i18n';
 
 `;
 
-  let tests = '';
+  const tests: string[] = [];
+
+  const formatData = (data: any, type: string) => {
+    if (!data) return 'undefined';
+    const json = JSON.stringify(data, null, 2)
+      .split('\n')
+      .map((line, i) => (i === 0 ? line : `  ${line}`))
+      .join('\n');
+    return `${json} as ${type}`;
+  };
 
   api.cases.forEach((tc) => {
-    // Main test case
     const mainTags = tc.tags ? tc.tags.join(' ') + ' ' : '';
-  
-    const methodCall = (tc.data || tc.params)
-    ? `api.${tc.methodName}({ data: ${tc.data ? JSON.stringify(tc.data, null, 2) + ' as Models.' + capitalize(tc.methodName) + 'Request' : 'undefined'}, params: ${tc.params ? JSON.stringify(tc.params, null, 2) + ' as Models.' + capitalize(tc.methodName) + 'Query' : 'undefined'} })`
-    : `api.${tc.methodName}()`;
 
-    tests += `test('${mainTags}${tc.description}', async ({ request }) => {
+    // Main test
+    const dataStr = tc.data
+      ? formatData(tc.data, `Models.${capitalize(tc.methodName)}Request`)
+      : 'undefined';
+    const paramsStr = tc.params
+      ? formatData(tc.params, `Models.${capitalize(tc.methodName)}Query`)
+      : 'undefined';
+
+    const methodCall = `api.${tc.methodName}({ 
+  data: ${dataStr},
+  params: ${paramsStr}
+})`;
+
+    tests.push(`test('${mainTags}${tc.description}', async ({ request }) => {
   const api = new ${api.pageName}(request);
   const response = await ${methodCall};
   const data = await response.json();
   console.log(data);
 });
+`);
 
-`;
-
-    // Validation test cases
+    // Validation tests
     if (tc.validations) {
       tc.validations.forEach((val, idx) => {
         const valTags = val.tags ? val.tags.join(' ') + ' ' : '';
-        const valDataType = val.data ? `Models.${capitalize(tc.methodName)}Validation${idx + 1}Request` : 'any';
-        const valParamsType = val.params ? `Models.${capitalize(tc.methodName)}Validation${idx + 1}Query` : 'any';
-        const valMethodCall = `api.${tc.methodName}({ data: ${val.data ? JSON.stringify(val.data, null, 2) + ' as ' + valDataType : 'undefined'}, params: ${val.params ? JSON.stringify(val.params, null, 2) + ' as ' + valParamsType : 'undefined'} })`;
 
-        tests += `test('${valTags}${tc.description} - ${val.description}', async ({ request }) => {
+        const valDataType = validationMap[tc.methodName]?.[idx]?.data || 'any';
+        const valParamsType = validationMap[tc.methodName]?.[idx]?.params || 'any';
+
+        const valDataStr = val.data ? formatData(val.data, `Models.${valDataType}`) : 'undefined';
+        const valParamsStr = val.params ? formatData(val.params, `Models.${valParamsType}`) : 'undefined';
+
+        const valMethodCall = `api.${tc.methodName}({ 
+  data: ${valDataStr},
+  params: ${valParamsStr}
+})`;
+
+        tests.push(`test('${valTags}${tc.description} - ${val.description}', async ({ request }) => {
   const api = new ${api.pageName}(request);
   const response = await ${valMethodCall};
   await api.expectStatus(response, ${val.expectStatus});
   ${val.messageKey ? `const json = await response.json(); expect(json.message || json.error).toContain(I18n.t('${val.messageKey}'));` : ''}
 });
-
-`;
+`);
       });
     }
   });
 
-  return imports + tests;
+  return imports + tests.join('\n');
 }
 
 
@@ -245,21 +299,17 @@ function writeFiles(api: ApiDefinition) {
   if (!fs.existsSync(apiFolder)) fs.mkdirSync(apiFolder, { recursive: true });
   if (!fs.existsSync(testFolder)) fs.mkdirSync(testFolder, { recursive: true });
 
-  // Models
-  const { modelFileName, content: modelContent } = generateModels(api);
+  const { modelFileName, content: modelContent, validationMap } = generateModels(api);
+
   fs.writeFileSync(path.join(apiFolder, modelFileName), modelContent);
-
-  // API Page
   fs.writeFileSync(path.join(apiFolder, `${api.pageName}.ts`), generatePageClass(api));
-
-  // Test File
-  fs.writeFileSync(path.join(testFolder, `${api.pageName}.spec.ts`), generateTestFile(api));
+  fs.writeFileSync(path.join(testFolder, `${api.pageName}.spec.ts`), generateTestFile(api, validationMap));
 
   console.log(`✅ Generated: ${api.pageName}`);
 }
 
 // ========================
-// Utility
+// Utils
 // ========================
 function capitalize(str: string) {
   return str.charAt(0).toUpperCase() + str.slice(1);

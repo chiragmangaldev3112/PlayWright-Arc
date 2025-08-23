@@ -77,7 +77,7 @@
         "validations": [
           {
             "description": "Create user with missing email",
-            "data": { "username": "string" },
+            "data": { "username": "string" ,"email":null},
             "expectStatus": 400,
             "messageKey": "error.missingEmail",
             "tags": ["@high", "@ui", "@regression"]

@@ -1,14 +1,14 @@
 export interface LoginRequest {
-  username: string;
-  password: string;
+  username?: string | null;
+  password?: string | null;
 }
 
 export interface LoginValidation1Request {
-  username: string;
-  password: string;
+  username?: string | null;
+  password?: string | null;
 }
 
 export interface LoginValidation2Request {
-  username: string;
-  password: string;
+  username?: string | null;
+  password?: string | null;
 }
