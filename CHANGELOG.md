@@ -7,8 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2025-08-23
+
 ### Added
-- Initial enterprise framework setup with comprehensive documentation
+- **Code Generation**
+  - Added support for generating Page Object Models with TypeScript
+  - Added automated test generation with proper TypeScript types
+  - Included video recording and screenshot capabilities in generated tests
+  - Added support for test tagging and categorization
+  - Implemented structured logging with emojis and timestamps
+  
+### Changed
+- **Code Generation**
+  - Updated test templates to follow Page Object Model pattern
+  - Improved error handling in generated tests
+  - Enhanced test reporting with screenshots on failure
+  - Optimized test execution with proper async/await patterns
+  - Standardized test file structure and naming conventions
+
+### Fixed
+- Removed duplicate variable declarations in generated tests
+- Fixed async/await patterns in test templates
+- Resolved TypeScript type issues in generated code
+- Fixed path resolution for imports in generated files
 - Multi-platform test support (Web UI, API, Mobile)
 - Advanced CI/CD pipeline configurations for GitHub Actions and Jenkins
 - Docker containerization with multi-service orchestration

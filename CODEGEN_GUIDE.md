@@ -1,23 +1,78 @@
-# 🎯 Custom Playwright Codegen Guide
+# 🎯 Playwright Test Automation Framework - Code Generation Guide
 
 ## Overview
 
-This framework provides custom Playwright codegen tools that automatically generate test cases following our coding standards and folder architecture. The generated tests include proper imports, logging, error handling, and follow our established patterns.
+This framework provides powerful code generation tools for creating Playwright tests with TypeScript, following the Page Object Model (POM) pattern. The generator creates:
+
+- Type-safe Page Object Models
+- Well-structured test files
+- Proper TypeScript types and interfaces
+- Comprehensive logging and error handling
+- Video recording and screenshot capabilities
 
 ## 🚀 Quick Start
 
+### Prerequisites
+
+- Node.js 16+
+- Playwright installed (`npm install -D @playwright/test`)
+- TypeScript configured in your project
+
+### Code Generation Workflow
+
+1. **Record Test Actions**
+   ```bash
+   # Record test actions and save to codegen-raw directory
+   npx playwright codegen https://parabank.parasoft.com/parabank/index.html --output codegen-raw/raw-bank.ts
+   ```
+
+2. **Generate Page Objects and Tests**
+   ```bash
+   # Generate Page Object and test file from recorded actions
+   node generator.js --pageName=TransferFund --testPrefix=transfer-funds --tags="@ui @critical"
+   ```
+
+   This will create:
+   - `pages/TransferFund.ts` - Page Object Model
+   - `tests/web/transfer-funds.spec.ts` - Test file with your recorded actions
+
 ### Basic Usage
 
+#### Generate Web Test with Page Object
+
 ```bash
-# Generate a test with automatic configuration
-./scripts/codegen-wrapper.sh https://www.saucedemo.com
-
-# Generate with custom name and tags
-./scripts/codegen-wrapper.sh -n login-functionality --tags '@smoke @auth @critical' https://www.saucedemo.com
-
-# Generate with page object
-./scripts/codegen-wrapper.sh -n checkout-flow -p --tags '@e2e @critical' https://www.saucedemo.com
+# Generate a web test with page object
+node generator.js --pageName=LoginPage --testPrefix=login-test --tags="@ui @critical"
 ```
+
+#### Generate API Test
+
+```bash
+# Generate an API test
+node generator.js --api --testPrefix=api-auth-test --tags="@api @critical"
+```
+
+#### Generate with Custom Options
+
+```bash
+# Generate with custom test data path
+node generator.js \
+  --pageName=CheckoutPage \
+  --testPrefix=checkout-flow \
+  --testData=./data/checkout.json \
+  --tags="@e2e @critical"
+```
+
+## 📋 Available Commands
+
+| Option | Description | Example |
+|--------|-------------|---------|
+| `--pageName` | Name of the page object class | `--pageName=LoginPage` |
+| `--testPrefix` | Base name for test files | `--testPrefix=login-test` |
+| `--tags` | Test tags for filtering | `--tags="@ui @critical"` |
+| `--api` | Generate API test instead of UI test | `--api` |
+| `--testData` | Path to test data file | `--testData=./data/test.json` |
+| `--watch` | Watch for file changes | `--watch` |
 
 ### Interactive Mode
 

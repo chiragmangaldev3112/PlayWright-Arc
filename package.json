@@ -42,6 +42,7 @@
   "devDependencies": {
     "@playwright/test": "^1.40.0",
     "@types/node": "^20.19.11",
+    "@types/uuid": "^10.0.0",
     "@typescript-eslint/eslint-plugin": "^6.13.0",
     "@typescript-eslint/parser": "^6.13.0",
     "allure-playwright": "^2.10.0",
@@ -52,9 +53,13 @@
     "eslint-plugin-prettier": "^5.0.1",
     "prettier": "^3.1.0",
     "ts-node": "^10.9.2",
-    "typescript": "^5.9.2"
+    "typescript": "^5.9.2",
+    "uuid": "^11.1.0"
   },
   "dependencies": {
+    "chokidar": "^4.0.3",
+    "execa": "^9.6.0",
+    "minimist": "^1.2.8",
     "winston": "^3.11.0"
   },
   "engines": {

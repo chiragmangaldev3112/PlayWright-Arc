@@ -34,17 +34,20 @@ codegen --help
 ### Quick Commands (Use These!)
 
 ```bash
-# 🎯 MOST COMMON: Record with page objects
-npm run codegen -p https://automationexercise.com/
+# 🎯 RECORD TEST ACTIONS
+# Record test actions and save to codegen-raw directory
+npx playwright codegen https://parabank.parasoft.com/parabank/index.html --output codegen-raw/raw-bank.ts
 
-# 🎯 SIMPLE: Basic recording
-npm run codegen https://automationexercise.com/
+# 🎯 GENERATE PAGE OBJECTS & TESTS
+# Generate Page Object and test file from recorded actions
+node generator.js --pageName=TransferFund --testPrefix=transfer-funds --tags="@ui @critical"
 
-# 🎯 CUSTOM LOCATION: Specify where to save
-npm run codegen -p -o automationexercise/checkout/guest-checkout.spec.ts https://automationexercise.com/
+# 🎯 RUN GENERATED TESTS
+# Run the generated test
+npx playwright test tests/web/transfer-funds.spec.ts
 
-# 🎯 INTERACTIVE: Guided setup for beginners
-npm run codegen -i https://automationexercise.com/
+# 🎯 RUN WITH UI MODE (DEBUGGING)
+npx playwright test --ui tests/web/transfer-funds.spec.ts
 ```
 
 ### Alternative Commands (After alias setup)

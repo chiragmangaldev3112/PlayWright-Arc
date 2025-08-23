@@ -1,49 +1,95 @@
-# 📋 Coding Standards & Best Practices
+# 📋 Playwright Test Automation - Coding Standards
 
 ## 🏷️ Test Tagging Conventions
 
 ### Standard Test Tags
 
-All tests should use consistent tagging for categorization, filtering, and CI/CD pipeline execution.
+All tests must be properly tagged for categorization, filtering, and CI/CD pipeline execution.
 
 #### **Priority Tags**
-- `@critical` - Critical business functionality that must always pass
-- `@high` - High priority features with significant business impact
-- `@medium` - Standard functionality tests
-- `@low` - Nice-to-have features or edge cases
+- `@critical` - Business-critical functionality (blocking issues)
+- `@high` - High-impact features (major functionality)
+- `@medium` - Standard functionality (default priority)
+- `@low` - Edge cases and non-critical features
 
 #### **Test Type Tags**
-- `@smoke` - Quick smoke tests for basic functionality verification
-- `@regression` - Full regression test suite
-- `@sanity` - Basic sanity checks after deployments
-- `@integration` - Integration tests between components/services
-- `@e2e` - End-to-end user journey tests
-- `@unit` - Unit tests for individual components
+- `@smoke` - Basic verification tests (fast execution)
+- `@regression` - Full regression suite (comprehensive)
+- `@sanity` - Quick health checks (pre-commit/PR)
+- `@e2e` - End-to-end user flows
+- `@api` - API contract and integration tests
+- `@visual` - Visual regression tests
 
 #### **Functional Area Tags**
-- `@auth` - Authentication and authorization tests
-- `@api` - API endpoint testing
-- `@ui` - User interface testing
+- `@auth` - Authentication & authorization
+- `@ui` - User interface components
+- `@api` - API endpoints and services
 - `@mobile` - Mobile-specific tests
-- `@web` - Web application tests
-- `@performance` - Performance and load testing
-- `@security` - Security vulnerability testing
-- `@accessibility` - Accessibility compliance testing
+- `@security` - Security testing
+- `@performance` - Performance benchmarks
+- `@a11y` - Accessibility compliance
 
-#### **Quality Attribute Tags**
-- `@data-integrity` - Data validation and consistency tests
-- `@error-handling` - Error scenarios and recovery testing
-- `@user-types` - Different user role/permission testing
-- `@navigation` - Browser navigation and routing tests
-- `@session` - Session management and timeout testing
-- `@stress` - Stress testing and concurrent operations
-- `@compatibility` - Cross-browser/cross-platform compatibility
+## 🛠️ TypeScript Standards
 
-#### **Environment Tags**
-- `@local` - Tests that run only in local environment
-- `@staging` - Staging environment specific tests
-- `@prod` - Production environment tests
-- `@dev` - Development environment tests
+### Type Definitions
+- Use TypeScript interfaces for all data structures
+- Prefer `type` over `interface` for unions and mapped types
+- Use `readonly` for immutable properties
+- Avoid `any` - use `unknown` with type guards
+
+### Page Objects
+```typescript
+class LoginPage extends BasePage {
+  // Locators
+  private readonly usernameInput = this.page.locator('#username');
+  private readonly passwordInput = this.page.locator('#password');
+  private readonly loginButton = this.page.locator('button[type="submit"]');
+
+  // Actions
+  async login(username: string, password: string): Promise<void> {
+    await this.usernameInput.fill(username);
+    await this.passwordInput.fill(password);
+    await this.loginButton.click();
+  }
+}
+```
+
+### Test Structure
+```typescript
+import { test, expect } from '@playwright/test';
+import { LoginPage } from '../pages/login-page';
+
+// Test suite with metadata
+test.describe('Authentication', () => {
+  // Test case with tags
+  test('should login with valid credentials @smoke @auth', async ({ page }) => {
+    const loginPage = new LoginPage(page);
+    await loginPage.navigate();
+    await loginPage.login('user@example.com', 'password');
+    await expect(page).toHaveURL('/dashboard');
+  });
+});
+```
+
+## ✅ Best Practices
+
+### Selectors
+- Prefer text-based selectors: `page.getByText('Submit')`
+- Use data-testid attributes: `page.getByTestId('submit-button')`
+- Avoid XPath selectors when possible
+- Keep selectors short and stable
+
+### Error Handling
+- Use custom error classes for expected errors
+- Implement retry logic for flaky operations
+- Add meaningful error messages
+- Include context in error logs
+
+### Test Data
+- Keep test data in separate JSON/TS files
+- Use factories for complex test data
+- Clean up test data after tests
+- Use unique identifiers for test data
 
 ### **Tag Usage Examples**
 

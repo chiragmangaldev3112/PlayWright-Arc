@@ -1,0 +1,11 @@
+// {
+//     "pageName": "LoginPage",
+//     "testPrefix": "login",
+//     "overrides": {
+//       "#email": "enterUserEmail",
+//       "#password": "enterPassword",
+//       "button[type='submit']": "clickLoginButton",
+//       "/dashboard": "verifyDashboardUrl"
+//     }
+//   }
+  

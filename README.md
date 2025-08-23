@@ -1,45 +1,99 @@
-# Enterprise-Grade Playwright Test Automation Framework
+# 🚀 Playwright Test Automation Framework
 
-A professional, scalable, and enterprise-ready test automation framework built with Playwright and TypeScript, supporting web UI testing, mobile emulation, and REST API testing.
+A modern, type-safe test automation framework built with Playwright and TypeScript, featuring powerful code generation, comprehensive reporting, and enterprise-grade architecture.
 
-## 🚀 Features
+## ✨ Key Features
 
-- **Multi-Platform Testing**: Web UI, Mobile Emulation, and REST API testing
-- **TypeScript Support**: Full TypeScript implementation with strict typing
-- **Page Object Model**: Clean, maintainable page object architecture
-- **Auto Code Generation**: Record tests and generate page objects automatically
-- **Role-Based Testing**: Support for different user roles and permissions
-- **Parallel Execution**: Run tests in parallel for faster execution
-- **Retry Mechanism**: Automatic retry for flaky tests
-- **Test Tagging**: Organize and filter tests using tags
-- **Comprehensive Reporting**: Multiple reporting formats (HTML, JSON, JUnit)
-- **Screenshot Capture**: Automatic screenshots on failures
-- **Video Recording**: Full test execution videos
-- **Logging**: Structured logging with multiple levels
-- **Environment Management**: Support for multiple environments
-- **CI/CD Ready**: GitHub Actions and Jenkins pipeline support
-- **Code Quality**: ESLint, Prettier, and pre-commit hooks
+- **TypeScript First**: Full TypeScript support with strict type checking
+- **Page Object Model**: Clean, maintainable architecture with type-safe page objects
+- **Smart Code Generation**: Generate tests and page objects with a single command
+- **Multi-Environment**: Test across different environments with ease
+- **Parallel Testing**: Built-in support for parallel test execution
+- **Visual Testing**: Screenshot and video recording capabilities
+- **API Testing**: Integrated API testing support
+- **Comprehensive Reporting**: HTML, JUnit, and Allure reporting
+- **CI/CD Ready**: GitHub Actions and Jenkins integration
+- **Modern Tooling**: ESLint, Prettier, and Husky for code quality
 
-## 🎯 Quick Start - Record Your First Test
+## 🚀 Quick Start
 
-### 1. Setup (One-time)
+### Prerequisites
+
+- Node.js 16 or higher
+- npm or yarn package manager
+- Git for version control
+
+### Installation and Setup
+
+1. **Clone and install dependencies**
+   ```bash
+   # Clone the repository
+   git clone https://github.com/your-org/playwright-framework.git
+   cd playwright-framework
+   
+   # Install dependencies
+   npm install
+   
+   # Install Playwright browsers
+   npx playwright install
+   ```
+
+2. **Record your first test**
+   ```bash
+   # Start recording test actions
+   npx playwright codegen https://parabank.parasoft.com/parabank/index.html --output codegen-raw/raw-bank.ts
+   ```
+   
+   Perform your test actions in the browser, then close it when done.
+
+3. **Generate Page Object and Test**
+   ```bash
+   # Generate Page Object and test file
+   node generator.js --pageName=TransferFund --testPrefix=transfer-funds --tags="@ui @critical"
+   ```
+
+4. **Run your test**
+   ```bash
+   # Run the generated test
+   npx playwright test tests/web/transfer-funds.spec.ts
+   ```
+
 ```bash
-# Clone and setup the project
+# Clone the repository
+git clone https://github.com/your-org/playwright-framework.git
+cd playwright-framework
+
+# Install dependencies
 npm install
-source .codegen-aliases  # Enable enhanced codegen
+
+# Install Playwright browsers
+npx playwright install
 ```
 
-### 2. Record a Test with Page Objects
-```bash
-# Record test and auto-generate page objects
-codegen -p https://automationexercise.com
+### Generate Your First Test
 
-# This will:
-# ✅ Open browser for recording
-# ✅ Generate enterprise-grade test file
-# ✅ Create page objects automatically (login, signup, cart, etc.)
-# ✅ Apply coding standards and logging
-# ✅ Add screenshots and error handling
+```bash
+# Generate a web test with page object
+node generator.js --pageName=LoginPage --testPrefix=login-test --tags="@ui @critical"
+
+# Generate an API test
+node generator.js --api --testPrefix=api-auth-test --tags="@api @critical"
+```
+
+### Run Tests
+
+```bash
+# Run all tests
+npm test
+
+# Run tests with specific tags
+npm test -- --grep @critical
+
+# Run in UI mode
+npm run test:ui
+
+# Run with Allure reporting
+npm run test:report
 ```
 
 ### 3. What Gets Generated
