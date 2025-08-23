@@ -295,7 +295,7 @@ import { I18n } from '@utils/i18n/i18n';
 // ========================
 function writeFiles(api: ApiDefinition) {
   const apiFolder = path.join('api', api.folder || '');
-  const testFolder = path.join('test/api', api.folder || '');
+  const testFolder = path.join('tests/api', api.folder || '');
   if (!fs.existsSync(apiFolder)) fs.mkdirSync(apiFolder, { recursive: true });
   if (!fs.existsSync(testFolder)) fs.mkdirSync(testFolder, { recursive: true });
 
