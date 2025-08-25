@@ -15,12 +15,4 @@ export class AuthApi extends BaseApi {
     await this.expectStatus(response, 200);
     return response;
   }
-
-  public async logout(overrides?: { data?: any; params?: any }) {
-    const requestData = overrides?.data || {};
-    const requestParams = overrides?.params || {};
-    const response = await this.post('/auth', requestData, { params: requestParams });
-    await this.expectStatus(response, 200);
-    return response;
-  }
 }

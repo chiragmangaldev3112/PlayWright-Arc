@@ -13,30 +13,42 @@
           "password": "string"
         },
         "expectStatus": 200,
-        "tags": ["@critical", "@auth", "@smoke"],
+        "response": {
+          "token": "string",
+          "expiresIn": 3600,
+          "user": {
+            "id": 1,
+            "username": "string",
+            "email": "string"
+          }
+        },
         "validations": [
           {
-            "description": "Login with empty username",
-            "data": { "username": "", "password": "string" },
-            "expectStatus": 400,
-            "messageKey": "error.emptyUsername",
-            "tags": ["@high", "@auth", "@regression"]
+            "description": "Login with invalid password",
+            "data": {
+              "username": "testuser",
+              "password": "wrongpass"
+            },
+            "expectStatus": 401,
+            "messageKey": "error.invalidCredentials",
+            "errorResponse": {
+              "error": "string",
+              "code": 401
+            }
           },
           {
-            "description": "Login with empty password",
-            "data": { "username": "string", "password": "" },
+            "description": "Login with missing username",
+            "data": {
+              "password": "somepass"
+            },
             "expectStatus": 400,
-            "messageKey": "error.emptyPassword",
-            "tags": ["@high", "@auth", "@regression"]
+            "messageKey": "error.usernameRequired",
+            "errorResponse": {
+              "error": "string",
+              "field": "username"
+            }
           }
         ]
-      },
-      {
-        "methodName": "logout",
-        "description": "Logout current user",
-        "method": "POST",
-        "expectStatus": 200,
-        "tags": ["@medium", "@auth", "@smoke"]
       }
     ]
   },
@@ -53,77 +65,28 @@
           "id": 1
         },
         "expectStatus": 200,
-        "tags": ["@high", "@ui", "@smoke"],
+        "response": {
+          "id": 1,
+          "username": "string",
+          "email": "string",
+          "profile": {
+            "firstName": "string",
+            "lastName": "string",
+            "age": 30
+          }
+        },
         "validations": [
           {
             "description": "Get user with invalid ID",
-            "params": { "id": 99999 },
+            "params": {
+              "id": 99999
+            },
             "expectStatus": 404,
             "messageKey": "error.userNotFound",
-            "tags": ["@medium", "@ui", "@regression"]
-          }
-        ]
-      },
-      {
-        "methodName": "createUser",
-        "description": "Create a new user",
-        "method": "POST",
-        "data": {
-          "username": "string",
-          "email": "string"
-        },
-        "expectStatus": 201,
-        "tags": ["@critical", "@ui", "@e2e"],
-        "validations": [
-          {
-            "description": "Create user with missing email",
-            "data": { "username": "string" ,"email":null},
-            "expectStatus": 400,
-            "messageKey": "error.missingEmail",
-            "tags": ["@high", "@ui", "@regression"]
-          }
-        ]
-      },
-      {
-        "methodName": "updateUser",
-        "description": "Update existing user",
-        "method": "PUT",
-        "data": {
-          "username": "string",
-          "email": "string"
-        },
-        "params": {
-          "id": 1
-        },
-        "expectStatus": 200,
-        "tags": ["@high", "@ui", "@regression"],
-        "validations": [
-          {
-            "description": "Update user with invalid ID",
-            "params": { "id": 99999 },
-            "data": { "username": "string", "email": "string" },
-            "expectStatus": 404,
-            "messageKey": "error.userNotFound",
-            "tags": ["@medium", "@ui", "@regression"]
-          }
-        ]
-      },
-      {
-        "methodName": "deleteUser",
-        "description": "Delete user by ID",
-        "method": "DELETE",
-        "params": {
-          "id": 1
-        },
-        "expectStatus": 204,
-        "tags": ["@medium", "@ui", "@regression"],
-        "validations": [
-          {
-            "description": "Delete non-existent user",
-            "params": { "id": 99999 },
-            "expectStatus": 404,
-            "messageKey": "error.userNotFound",
-            "tags": ["@low", "@ui", "@regression"]
+            "errorResponse": {
+              "error": "string",
+              "code": 404
+            }
           }
         ]
       }

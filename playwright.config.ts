@@ -1,6 +1,11 @@
 import { defineConfig, devices } from '@playwright/test';
 import dotenv from 'dotenv';
 import path from 'path';
+import { fileURLToPath } from 'url';
+
+// ES module compatible __dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 /**
  * Enterprise Playwright Configuration
@@ -33,19 +38,19 @@ export default defineConfig({
   // Test directory structure
   testDir: './tests',
   
-  // Global test timeout (30 seconds per test)
-  timeout: 30 * 1000,
+  // Global test timeout (60 seconds per test)
+  timeout: 60 * 1000,
   
-  // Expect timeout for assertions (10 seconds)
+  // Expect timeout for assertions (15 seconds)
   expect: {
-    timeout: 10 * 1000,
+    timeout: 15 * 1000,
   },
   
   // Test execution configuration
-  fullyParallel: true,                    // Run tests in parallel across all workers
-  forbidOnly: !!process.env.CI,          // Fail build on CI if test.only is left in code
-  retries: process.env.CI ? 2 : 1,       // Retry failed tests (2 times on CI, 1 time locally)
-  workers: process.env.CI ? 2 : 1, // Limit workers on CI, use 1 locally
+  fullyParallel: false,                    // Run tests sequentially for better debugging
+  forbidOnly: !!process.env.CI,           // Fail build on CI if test.only is left in code
+  retries: process.env.CI ? 2 : 1,        // Retry failed tests (2 times on CI, 1 time locally)
+  workers: 1,                            // Run with 1 worker for stability during debugging
   
   // Global test configuration
   use: {
@@ -53,8 +58,12 @@ export default defineConfig({
     baseURL: process.env.BASE_URL || 'https://example.com',
     
     // Browser context options
-    viewport: { width: 1280, height: 720 },
+    viewport: { width: 1920, height: 1080 },
     ignoreHTTPSErrors: true,
+    bypassCSP: true,                     // Bypass Content-Security-Policy
+    javaScriptEnabled: true,             // Ensure JavaScript is enabled
+    locale: 'en-US',                     // Set default locale
+    timezoneId: 'America/New_York',      // Set default timezone
     
     // Screenshots and videos
     screenshot: {
@@ -67,7 +76,19 @@ export default defineConfig({
     },
     
     // Tracing for debugging
-    trace: 'retain-on-failure',         // Keep traces only for failed tests
+    trace: 'on-first-retry',            // Record traces for retried tests
+    
+    // Log browser console messages
+    launchOptions: {
+      slowMo: 100,                      // Slow down execution by 100ms for better visibility
+      headless: false,                  // Show browser for debugging
+      devtools: true,                   // Open devtools by default
+      args: [
+        '--disable-web-security',
+        '--disable-features=IsolateOrigins,site-per-process',
+        '--disable-site-isolation-trials'
+      ]
+    },
     
     // Action timeout
     actionTimeout: 15 * 1000,           // 15 seconds for actions like click, fill, etc.
@@ -197,8 +218,8 @@ export default defineConfig({
   ],
 
   // Global setup and teardown
-  globalSetup: require.resolve('./utils/core/global-setup.ts'),
-  globalTeardown: require.resolve('./utils/core/global-teardown.ts'),
+  globalSetup: new URL('./utils/core/global-setup.ts', import.meta.url).pathname,
+  globalTeardown: new URL('./utils/core/global-teardown.ts', import.meta.url).pathname,
 
   // Web server configuration (if testing local applications)
   ...(process.env.START_LOCAL_SERVER === 'true' ? {

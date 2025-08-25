@@ -9,6 +9,5 @@ export interface LoginValidation1Request {
 }
 
 export interface LoginValidation2Request {
-  username?: string | null;
   password?: string | null;
 }
