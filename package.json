@@ -54,13 +54,18 @@
     "prettier": "^3.1.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.2",
-    "uuid": "^11.1.0"
+    "uuid": "^11.1.0",
+    "@types/pg": "^8.10.9"
   },
   "dependencies": {
     "chokidar": "^4.0.3",
     "execa": "^9.6.0",
     "minimist": "^1.2.8",
-    "winston": "^3.11.0"
+    "winston": "^3.11.0",
+    "pg": "^8.11.3",
+    "mysql2": "^3.6.5",
+    "sqlite3": "^5.1.6",
+    "sqlite": "^5.1.1"
   },
   "engines": {
     "node": ">=18.0.0",

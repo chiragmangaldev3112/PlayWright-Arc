@@ -35,11 +35,11 @@ class DatabaseManager {
 
       case 'mysql':
         this.connection = await mysql.createConnection({
-          host: this.config.host,
-          port: this.config.port,
+          host: this.config.host || 'localhost',
+          port: this.config.port || 3306,
           database: this.config.database,
-          user: this.config.username,
-          password: this.config.password,
+          user: this.config.username || 'root',
+          password: this.config.password || '',
         });
         break;
 
