@@ -12,43 +12,71 @@
           "username": "string",
           "password": "string"
         },
+        "requiredFields": ["username", "password"],
         "expectStatus": 200,
-        "response": {
-          "token": "string",
-          "expiresIn": 3600,
-          "user": {
-            "id": 1,
-            "username": "string",
-            "email": "string"
+        "tags": ["@critical", "@auth", "@smoke"],
+        "expectedResponse": {
+          "structure": {
+            "token": "string",
+            "user": {
+              "id": 1,
+              "username": "string"
+            }
+          },
+          "requiredKeys": ["token", "user"],
+          "dataTypes": {
+            "token": "string",
+            "user": "object"
           }
         },
         "validations": [
           {
-            "description": "Login with invalid password",
-            "data": {
-              "username": "testuser",
-              "password": "wrongpass"
-            },
-            "expectStatus": 401,
-            "messageKey": "error.invalidCredentials",
-            "errorResponse": {
-              "error": "string",
-              "code": 401
+            "description": "Login with empty username",
+            "data": { "username": "", "password": "string" },
+            "expectStatus": 400,
+            "messageKey": "error.emptyUsername",
+            "tags": ["@high", "@auth", "@regression"],
+            "expectedResponse": {
+              "structure": {
+                "error": "string",
+                "code": 400
+              },
+              "requiredKeys": ["error"],
+              "dataTypes": {
+                "error": "string",
+                "code": "number"
+              },
+              "values": {
+                "code": 400
+              }
             }
           },
           {
-            "description": "Login with missing username",
-            "data": {
-              "password": "somepass"
-            },
+            "description": "Login with empty password",
+            "data": { "username": "string", "password": "" },
             "expectStatus": 400,
-            "messageKey": "error.usernameRequired",
-            "errorResponse": {
-              "error": "string",
-              "field": "username"
+            "messageKey": "error.emptyPassword",
+            "tags": ["@high", "@auth", "@regression"],
+            "expectedResponse": {
+              "structure": {
+                "error": "string",
+                "code": 400
+              },
+              "requiredKeys": ["error"],
+              "dataTypes": {
+                "error": "string",
+                "code": "number"
+              }
             }
           }
         ]
+      },
+      {
+        "methodName": "logout",
+        "description": "Logout current user",
+        "method": "POST",
+        "expectStatus": 200,
+        "tags": ["@medium", "@auth", "@smoke"]
       }
     ]
   },
@@ -64,28 +92,227 @@
         "params": {
           "id": 1
         },
+        "requiredParams": ["id"],
         "expectStatus": 200,
-        "response": {
-          "id": 1,
-          "username": "string",
-          "email": "string",
-          "profile": {
-            "firstName": "string",
-            "lastName": "string",
-            "age": 30
+        "tags": ["@high", "@ui", "@smoke"],
+        "expectedResponse": {
+          "structure": {
+            "id": 1,
+            "username": "string",
+            "email": "string",
+            "createdAt": "string"
+          },
+          "requiredKeys": ["id", "username", "email"],
+          "dataTypes": {
+            "id": "number",
+            "username": "string",
+            "email": "string",
+            "createdAt": "string"
           }
         },
         "validations": [
           {
             "description": "Get user with invalid ID",
-            "params": {
-              "id": 99999
-            },
+            "params": { "id": 99999 },
             "expectStatus": 404,
             "messageKey": "error.userNotFound",
-            "errorResponse": {
-              "error": "string",
-              "code": 404
+            "tags": ["@medium", "@ui", "@regression"],
+            "expectedResponse": {
+              "structure": {
+                "error": "string",
+                "code": 404
+              },
+              "requiredKeys": ["error"],
+              "values": {
+                "code": 404
+              }
+            }
+          }
+        ]
+      },
+      {
+        "methodName": "createUser",
+        "description": "Create a new user",
+        "method": "POST",
+        "data": {
+          "username": "string",
+          "email": "string"
+        },
+        "requiredFields": ["username", "email"],
+        "expectStatus": 201,
+        "tags": ["@critical", "@ui", "@e2e"],
+        "expectedResponse": {
+          "structure": {
+            "id": 1,
+            "username": "string",
+            "email": "string",
+            "createdAt": "string"
+          },
+          "requiredKeys": ["id", "username", "email"],
+          "dataTypes": {
+            "id": "number",
+            "username": "string",
+            "email": "string",
+            "createdAt": "string"
+          }
+        },
+        "databaseValidation": {
+          "table": "users",
+          "where": {
+            "username": "{{requestData.username}}",
+            "email": "{{requestData.email}}"
+          },
+          "expectedCount": 1,
+          "compareWith": "requestData",
+          "expectedData": {
+            "username": "username",
+            "email": "email",
+            "status": "active"
+          }
+        },
+        "validations": [
+          {
+            "description": "Create user with missing email",
+            "data": { "username": "string" ,"email":null},
+            "expectStatus": 400,
+            "messageKey": "error.missingEmail",
+            "tags": ["@high", "@ui", "@regression"],
+            "expectedResponse": {
+              "structure": {
+                "error": "string",
+                "code": 400
+              },
+              "requiredKeys": ["error"],
+              "dataTypes": {
+                "error": "string",
+                "code": "number"
+              },
+              "values": {
+                "code": 400
+              }
+            },
+            "databaseValidation": {
+              "table": "users",
+              "where": {
+                "username": "{{requestData.username}}"
+              },
+              "expectedCount": 0
+            }
+          }
+        ]
+      },
+      {
+        "methodName": "updateUser",
+        "description": "Update existing user",
+        "method": "PUT",
+        "data": {
+          "username": "string",
+          "email": "string"
+        },
+        "params": {
+          "id": 1
+        },
+        "requiredFields": ["username", "email"],
+        "requiredParams": ["id"],
+        "expectStatus": 200,
+        "tags": ["@high", "@ui", "@regression"],
+        "expectedResponse": {
+          "structure": {
+            "id": 1,
+            "username": "string",
+            "email": "string",
+            "createdAt": "string"
+          },
+          "requiredKeys": ["id", "username", "email"],
+          "dataTypes": {
+            "id": "number",
+            "username": "string",
+            "email": "string",
+            "createdAt": "string"
+          }
+        },
+        "databaseValidation": {
+          "table": "users",
+          "where": {
+            "id": "{{params.id}}"
+          },
+          "expectedCount": 1,
+          "compareWith": "requestData",
+          "expectedData": {
+            "username": "username",
+            "email": "email"
+          },
+          "fields": ["id", "username", "email", "updated_at"]
+        },
+        "validations": [
+          {
+            "description": "Update user with invalid ID",
+            "params": { "id": 99999 },
+            "data": { "username": "string", "email": "string" },
+            "expectStatus": 404,
+            "messageKey": "error.userNotFound",
+            "tags": ["@medium", "@ui", "@regression"],
+            "expectedResponse": {
+              "structure": {
+                "error": "string",
+                "code": 404
+              },
+              "requiredKeys": ["error"],
+              "values": {
+                "code": 404
+              }
+            },
+            "databaseValidation": {
+              "table": "users",
+              "where": {
+                "id": "{{params.id}}"
+              },
+              "expectedCount": 0
+            }
+          }
+        ]
+      },
+      {
+        "methodName": "deleteUser",
+        "description": "Delete user by ID",
+        "method": "DELETE",
+        "params": {
+          "id": 1
+        },
+        "requiredParams": ["id"],
+        "expectStatus": 204,
+        "tags": ["@medium", "@ui", "@regression"],
+        "expectedResponse": null,
+        "databaseValidation": {
+          "table": "users",
+          "where": {
+            "id": "{{params.id}}"
+          },
+          "expectedCount": 0
+        },
+        "validations": [
+          {
+            "description": "Delete non-existent user",
+            "params": { "id": 99999 },
+            "expectStatus": 404,
+            "messageKey": "error.userNotFound",
+            "tags": ["@low", "@ui", "@regression"],
+            "expectedResponse": {
+              "structure": {
+                "error": "string",
+                "code": 404
+              },
+              "requiredKeys": ["error"],
+              "values": {
+                "code": 404
+              }
+            },
+            "databaseValidation": {
+              "table": "users",
+              "where": {
+                "id": "{{params.id}}"
+              },
+              "expectedCount": 0
             }
           }
         ]
