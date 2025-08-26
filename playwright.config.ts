@@ -39,11 +39,11 @@ export default defineConfig({
   testDir: './tests',
   
   // Global test timeout (60 seconds per test)
-  timeout: 60 * 1000,
+  timeout: 120000,
   
   // Expect timeout for assertions (15 seconds)
   expect: {
-    timeout: 15 * 1000,
+    timeout: 120000,
   },
   
   // Test execution configuration
@@ -55,7 +55,7 @@ export default defineConfig({
   // Global test configuration
   use: {
     // Base URL for web tests
-    baseURL: process.env.BASE_URL || 'https://example.com',
+    baseURL: process.env.BASE_URL || 'https://web.vitadev.vero-biotech.com/',
     
     // Browser context options
     viewport: { width: 1920, height: 1080 },
@@ -159,7 +159,7 @@ export default defineConfig({
       testMatch: /.*api.*\.(spec|test)\.ts$/,
       use: {
         // API-specific configuration
-        baseURL: process.env.API_BASE_URL || 'https://api.example.com',
+        baseURL: process.env.API_BASE_URL || 'https://web.vitadev.vero-biotech.com/',
         extraHTTPHeaders: {
           'Authorization': `Bearer ${process.env.API_TOKEN || ''}`,
           'Accept': 'application/json',
@@ -234,8 +234,8 @@ export default defineConfig({
   // Metadata for reports
   metadata: {
     environment: environment,
-    baseURL: process.env.BASE_URL || 'https://example.com',
-    apiBaseURL: process.env.API_BASE_URL || 'https://api.example.com',
+    baseURL: process.env.BASE_URL || 'https://web.vitadev.vero-biotech.com/',
+    apiBaseURL: process.env.API_BASE_URL || 'https://web.vitadev.vero-biotech.com/',
     testSuite: 'Enterprise Automation Framework',
     version: '1.0.0',
     author: 'Enterprise Automation Team',

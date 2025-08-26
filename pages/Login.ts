@@ -100,9 +100,87 @@ export class Login {
    * Clicks on element with selector: role=button[name="Image"]
    * @returns {Promise<void>}
    */
+  
   async clickButtonImage(): Promise<void> {
-    await waitAndClick(this.page, 'role=button[name="Image"] >> nth=0');
+    try {
+      await this.page.waitForTimeout(3000);
+      // Wait until DOM is loaded
+      await this.page.waitForLoadState('domcontentloaded');
+  
+      // Log current URL for debugging
+      const currentUrl = this.page.url();
+      logger.info(`Current URL after sign-in: ${currentUrl}`);
+  
+      // Wait for main container to appear
+      await this.page.waitForSelector(
+        'div.d-flex.justify-content-center.align-items-center',
+        { state: 'visible', timeout: 60000 }
+      );
+  
+      // Debug: log all images found inside buttons
+      const allImages = await this.page.$$eval('button.btn.border-0 img', imgs =>
+        imgs.map(img => ({
+          src: img.getAttribute('src'),
+          alt: img.getAttribute('alt'),
+        }))
+      );
+      logger.info(`Found images inside buttons: ${JSON.stringify(allImages, null, 2)}`);
+  
+      // Candidate selectors (ordered by preference)
+      const selectors = [
+        'button.btn.border-0:has(img[src*="VITA.png"])',     // Prefer VITA logo
+        'button.btn.border-0:has(span img[alt="Image"])',   // Match wrapped images
+        'button.btn.border-0:has(img)',                     // Any button with an image
+      ];
+  
+      // Try each selector in order
+      for (const selector of selectors) {
+        try {
+          const button = await this.page.waitForSelector(selector, {
+            state: 'visible',
+            timeout: 15000,
+          });
+  
+          await button.click();
+          logger.info(`✅ Successfully clicked image with selector: ${selector}`);
+  
+          // Wait for navigation/network idle
+          await this.page.waitForLoadState('networkidle');
+          return;
+        } catch (err) {
+          logger.warn(`⚠️ Selector ${selector} failed: ${err}`);
+        }
+      }
+  
+      // If nothing worked, throw error
+      throw new Error('❌ Could not find any image button to click');
+    } catch (error) {
+      // Capture debug info
+      let pageContent: string;
+      try {
+        pageContent = await this.page.content();
+      } catch {
+        pageContent = 'Failed to get page content';
+      }
+  
+      let screenshot: Buffer | null = null;
+      try {
+        screenshot = await this.page.screenshot({ type: 'png' });
+      } catch {
+        screenshot = null;
+      }
+  
+      logger.error('Error in clickButtonImage:', {
+        error: error instanceof Error ? error.message : error,
+        url: this.page.url(),
+        pageContent: pageContent.substring(0, 1000), // first 1000 chars only
+        screenshot: screenshot ? 'Screenshot captured' : 'Failed to capture screenshot',
+      });
+  
+      throw error;
+    }
   }
+
 
   /**
    * Clicks on element with selector: a >> text=User Management
@@ -117,6 +195,7 @@ export class Login {
    * @returns {Promise<void>}
    */
   async clickButtonManageUser(): Promise<void> {
+    await this.page.waitForTimeout(3000);
     await waitAndClick(this.page, 'role=button[name="Manage User"]');
   }
 
@@ -125,6 +204,7 @@ export class Login {
    * @returns {Promise<void>}
    */
   async clickButtonAddUser(): Promise<void> {
+    await this.page.waitForTimeout(3000);
     await waitAndClick(this.page, 'role=button[name="Add User"]');
   }
 
@@ -134,7 +214,9 @@ export class Login {
    * @returns {Promise<void>}
    */
   async selectCombobox(value: string = 'External'): Promise<void> {
+    await this.page.waitForTimeout(3000);
     await this.page.locator('role=combobox').selectOption(value);
+    await this.page.waitForTimeout(3000);
   }
 
   /**
@@ -182,14 +264,6 @@ export class Login {
   }
 
   /**
-   * Clicks on element with selector: role=textbox[name="Password"]
-   * @returns {Promise<void>}
-   */
-  async clickTextboxPassword(): Promise<void> {
-    await waitAndClick(this.page, 'role=textbox[name="Password"]');
-  }
-
-  /**
    * Selects option from role=combobox dropdown
    * @param {string} [value='+91'] - The option value to select
    * @returns {Promise<void>}
@@ -232,22 +306,6 @@ export class Login {
   }
 
   /**
-   * Clicks on element with selector: text=Select Hospital
-   * @returns {Promise<void>}
-   */
-  async clickTextSelectHospital(): Promise<void> {
-    await waitAndClick(this.page, 'text=Select Hospital');
-  }
-
-  /**
-   * Clicks on element with selector: role=list
-   * @returns {Promise<void>}
-   */
-  async clickListButton(): Promise<void> {
-    await waitAndClick(this.page, 'role=list');
-  }
-
-  /**
    * Selects option from role=combobox dropdown
    * @param {string} [value='7'] - The option value to select
    * @returns {Promise<void>}
@@ -257,11 +315,19 @@ export class Login {
   }
 
   /**
-   * Checks Role row Name C1005 - Nightstar, Inc. [ checkbox/radio
+   * Clicks on element with selector: text=Select Hospital
    * @returns {Promise<void>}
    */
-  async checkRowCNightstarInc(): Promise<void> {
-    await this.page.locator('role=row[name="C1005 - Nightstar, Inc. ["]').check();
+  async clickTextSelectHospital(): Promise<void> {
+    await waitAndClick(this.page, 'text=Select Hospital');
+  }
+
+  /**
+   * Clicks on element with selector: role=list >> text=C1002 - Test Company [
+   * @returns {Promise<void>}
+   */
+  async clickListTextCTestCompany(): Promise<void> {
+    await waitAndClick(this.page, 'role=list >> text=C1002 - Test Company [');
   }
 
   /**
@@ -277,6 +343,15 @@ export class Login {
    * @returns {Promise<void>}
    */
   async clickButtonOk(): Promise<void> {
+   
     await waitAndClick(this.page, 'role=button[name="Ok"]');
+  }
+
+  /**
+   * Checks #radio checkbox/radio
+   * @returns {Promise<void>}
+   */
+  async checkradio(): Promise<void> {
+    await this.page.locator('#radio').check();
   }
 }

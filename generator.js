@@ -102,6 +102,27 @@ function parseSteps(content) {
       return { action: 'click', raw: l, selector: sel, methodName: methodName };
     }
     
+    // Handle chained selectors like getByRole().getByText() FIRST (before simple getByRole)
+    if (trimmed.includes('.getByRole(') && trimmed.includes('.getByText(') && trimmed.includes(').click()')) {
+      const roleMatch = trimmed.match(/\.getByRole\(['"]([^'"]+)['"]\)/);
+      const textMatch = trimmed.match(/\.getByText\(['"]([^'"]*)['"]\)/);
+      if (roleMatch && textMatch) {
+        const role = roleMatch[1];
+        const text = textMatch[1];
+        const sanitizedRole = toProperCamelCase(role);
+        // Clean text for method name but preserve original for selector
+        const cleanText = text.replace(/[^a-zA-Z0-9\s]/g, '').trim();
+        const sanitizedText = toProperCamelCase(cleanText);
+        const methodName = `click${sanitizedRole}Text${sanitizedText}`;
+        return { 
+          action: 'click', 
+          raw: l, 
+          selector: `role=${role} >> text=${text}`,
+          methodName: methodName
+        };
+      }
+    }
+
     // Handle page.getByRole().click() with modifiers
     if (trimmed.includes('.getByRole(') && trimmed.includes(').click()')) {
       const roleMatch = trimmed.match(/\.getByRole\(([^)]+)\)/);
@@ -318,14 +339,9 @@ function parseSteps(content) {
     if (trimmed.includes('.locator(') && trimmed.includes(').press(')) {
       const sel = trimmed.match(/\.locator\(['"`](.*?)['"`]\)/)?.[1];
       const key = trimmed.match(/\.press\(['"`](.*?)['"`]\)/)?.[1];
-      return { action: 'press', raw: l, selector: sel, key };
+      return { action: 'press', raw: l, selector: sel, key: key.replace(/[^a-zA-Z0-9]/g, '') };
     }
 
-    // Handle page.locator().check()
-    if (trimmed.includes('.locator(') && trimmed.includes(').check()')) {
-      const sel = trimmed.match(/\.locator\(['"`](.*?)['"`]\)/)?.[1];
-      return { action: 'check', raw: l, selector: sel };
-    }
 
     // Handle page.getByText().click()
     if (trimmed.includes('.getByText(') && trimmed.includes(').click()')) {
@@ -343,20 +359,17 @@ function parseSteps(content) {
       }
     }
 
-    // Handle chained selectors like getByRole().getByText()
-    if (trimmed.includes('.getByRole(') && trimmed.includes('.getByText(') && trimmed.includes(').click()')) {
-      const roleMatch = trimmed.match(/\.getByRole\(['"`]([^'`"]+)['"`]\)/);
-      const textMatch = trimmed.match(/\.getByText\(['"`]([^'`"]+)['"`]\)/);
-      if (roleMatch && textMatch) {
-        const role = roleMatch[1];
-        const text = textMatch[1];
-        const sanitizedRole = toProperCamelCase(role);
-        const sanitizedText = toProperCamelCase(text);
-        const methodName = `click${sanitizedRole}Text${sanitizedText}`;
+
+    // Handle page.locator('#selector').check()
+    if (trimmed.includes('.locator(') && trimmed.includes(').check()')) {
+      const sel = trimmed.match(/\.locator\(['`"](.*?)['`"]\)/)?.[1];
+      if (sel) {
+        const sanitizedSelector = sel.replace(/[^a-zA-Z0-9]/g, '');
+        const methodName = `check${sanitizedSelector}`;
         return { 
-          action: 'click', 
+          action: 'check', 
           raw: l, 
-          selector: `role=${role} >> text=${text}`,
+          selector: sel,
           methodName: methodName
         };
       }
@@ -654,25 +667,24 @@ function generateTest(steps, testName = 'test', pageClassName = 'GeneratedPage')
     }
     else if (step.action === 'click') {
       const methodName = step.methodName || 'clickElement';
-      const methodCall = `await ${pageName.toLowerCase()}.${methodName}();`;
-      if (!methodCalls.has(methodCall)) {
-        methodCalls.add(methodCall);
-        const elementDesc = step.selector.startsWith('role=') 
-          ? step.selector.replace('role=', '') + ' button'
-          : `element with selector: ${step.selector}`;
-        actions.push(`// Click on ${elementDesc}
+      const methodCall = `await ${pageClassName.toLowerCase()}.${methodName}();`;
+      // Always add click actions - don't check for duplicates since clicks should always execute
+      methodCalls.add(methodCall);
+      const elementDesc = step.selector && step.selector.startsWith('role=') 
+        ? step.selector.replace('role=', '') + ' button'
+        : `element with selector: ${step.selector || 'unknown'}`;
+      actions.push(`// Click on ${elementDesc}
       ${methodCall}`);
-        testDescription.push(`click on ${elementDesc}`);
-      }
+      testDescription.push(`click on ${elementDesc}`);
     }
     else if (step.action === 'fill') {
       // Use the same method name generation as in page object
       const methodName = step.methodName || 'fillElement';
       const valueToUse = step.value || 'test-value';
-      const methodCall = `await ${pageName.toLowerCase()}.${methodName}('${valueToUse}');`;
+      const methodCall = `await ${pageClassName.toLowerCase()}.${methodName}('${valueToUse}');`;
       // Always add fill actions - don't check for duplicates since fill actions should always execute
       methodCalls.add(methodCall);
-      const fieldName = toCamelCase(step.selector).replace(/^[a-z]/, c => c.toUpperCase())
+      const fieldName = toCamelCase(step.selector || 'field').replace(/^[a-z]/, c => c.toUpperCase())
         .replace(/([A-Z])/g, ' $1').trim();
       actions.push(`// Fill in the ${fieldName} field
       ${methodCall}`);
@@ -680,10 +692,10 @@ function generateTest(steps, testName = 'test', pageClassName = 'GeneratedPage')
     }
     else if (step.action === 'press') {
       const methodName = step.methodName || 'pressKey';
-      const methodCall = `await ${pageName.toLowerCase()}.${methodName}();`;
+      const methodCall = `await ${pageClassName.toLowerCase()}.${methodName}();`;
       if (!methodCalls.has(methodCall)) {
         methodCalls.add(methodCall);
-        const keyName = step.key.replace(/['"]/g, '').toUpperCase();
+        const keyName = step.key ? step.key.replace(/['"]/g, '').toUpperCase() : 'KEY';
         actions.push(`// Press ${keyName} key
       ${methodCall}`);
         testDescription.push(`press ${keyName} key`);
@@ -692,12 +704,12 @@ function generateTest(steps, testName = 'test', pageClassName = 'GeneratedPage')
     else if (step.action === 'select') {
       const methodName = step.methodName || 'selectOption';
       const valueToUse = step.value || 'option';
-      const methodCall = `await ${pageName.toLowerCase()}.${methodName}('${valueToUse}');`;
+      const methodCall = `await ${pageClassName.toLowerCase()}.${methodName}('${valueToUse}');`;
       if (!methodCalls.has(methodCall)) {
         methodCalls.add(methodCall);
-        const elementDesc = step.selector.startsWith('role=') 
+        const elementDesc = step.selector && step.selector.startsWith('role=') 
           ? step.selector.replace('role=', '') + ' dropdown'
-          : `element with selector: ${step.selector}`;
+          : `element with selector: ${step.selector || 'unknown'}`;
         actions.push(`// Select option from ${elementDesc}
       ${methodCall}`);
         testDescription.push(`select option from ${elementDesc}`);
@@ -705,20 +717,19 @@ function generateTest(steps, testName = 'test', pageClassName = 'GeneratedPage')
     }
     else if (step.action === 'check') {
       const methodName = step.methodName || 'checkElement';
-      const methodCall = `await ${pageName.toLowerCase()}.${methodName}();`;
-      if (!methodCalls.has(methodCall)) {
-        methodCalls.add(methodCall);
-        const elementDesc = step.selector.startsWith('role=') 
-          ? step.selector.replace('role=', '') + ' checkbox'
-          : `element with selector: ${step.selector}`;
-        actions.push(`// Check ${elementDesc}
+      const methodCall = `await ${pageClassName.toLowerCase()}.${methodName}();`;
+      // Always add check actions - don't check for duplicates since checks should always execute
+      methodCalls.add(methodCall);
+      const elementDesc = step.selector && step.selector.startsWith('role=') 
+        ? step.selector.replace('role=', '') + ' checkbox'
+        : `element with selector: ${step.selector || 'unknown'}`;
+      actions.push(`// Check ${elementDesc}
       ${methodCall}`);
-        testDescription.push(`check ${elementDesc}`);
-      }
+      testDescription.push(`check ${elementDesc}`);
     }
     else {
       const methodName = step.methodName || 'performAction';
-      const methodCall = `await ${pageName.toLowerCase()}.${methodName}();`;
+      const methodCall = `await ${pageClassName.toLowerCase()}.${methodName}();`;
       if (!methodCalls.has(methodCall)) {
         methodCalls.add(methodCall);
         actions.push(`// Perform action
