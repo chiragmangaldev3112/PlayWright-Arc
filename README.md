@@ -899,3 +899,12 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 **Happy Testing! 🎉**
 
 node --experimental-loader=ts-node/esm ./scripts/generate-test.ts ./data/test-data.json
+
+
+Web
+Step 1
+npx playwright codegen https://web.vitadev.vero-biotech.com/ --output codegen-raw/raw-vero.ts
+Step 2
+ node generator.js --pageName=Login --testPrefix=login-page --tags="@ui @critical"
+step 3 
+npx playwright test tests/web/login-page.spec.ts --headed
