@@ -908,3 +908,5 @@ Step 2
  node generator.js --pageName=Login --testPrefix=login-page --tags="@ui @critical"
 step 3 
 npx playwright test tests/web/login-page.spec.ts --headed
+step4
+npx playwright show-report

@@ -2,7 +2,7 @@ import { Page } from '@playwright/test';
 import { logger } from '@utils/core/logger';
 import { waitAndClick, waitAndFill } from '@utils/core/element-actions';
 
-export class Login {
+export class CreateUser {
   constructor(private page: Page) {}
   
           /**
@@ -63,10 +63,10 @@ export class Login {
 
   /**
    * Fills the Role textbox Name Email Address field with the provided value
-   * @param {string} [value='baljeetadmin@gmail.com'] - The value to enter in the field
+   * @param {string} [value='Baljeetadmin@gmail.com'] - The value to enter in the field
    * @returns {Promise<void>}
    */
-  async fillTextboxEmailAddress(value: string = 'baljeetadmin@gmail.com'): Promise<void> {
+  async fillTextboxEmailAddress(value: string = 'Baljeetadmin@gmail.com'): Promise<void> {
     await waitAndFill(this.page, 'role=textbox[name="Email Address"]', value);
   }
 
@@ -97,10 +97,33 @@ export class Login {
   }
 
   /**
+   * Clicks on element with selector: role=button[name="Accept"]
+   * @returns {Promise<void>}
+   */
+  async clickButtonAccept(): Promise<void> {
+    await waitAndClick(this.page, 'role=button[name="Accept"]');
+  }
+
+  /**
+   * Clicks on element with selector: role=heading[name="Welcome, Brayan Smitth!"]
+   * @returns {Promise<void>}
+   */
+  async clickHeadingWelcomeBrayanSmitth(): Promise<void> {
+    await waitAndClick(this.page, 'role=heading[name="Welcome, Brayan Smitth!"]');
+  }
+
+  /**
+   * Clicks on element with selector: text=Select an application to
+   * @returns {Promise<void>}
+   */
+  async clickTextSelectAnApplicationTo(): Promise<void> {
+    await waitAndClick(this.page, 'text=Select an application to');
+  }
+
+  /**
    * Clicks on element with selector: role=button[name="Image"]
    * @returns {Promise<void>}
    */
-  
   async clickButtonImage(): Promise<void> {
     try {
       await this.page.waitForTimeout(3000);
@@ -181,7 +204,6 @@ export class Login {
     }
   }
 
-
   /**
    * Clicks on element with selector: a >> text=User Management
    * @returns {Promise<void>}
@@ -249,30 +271,28 @@ export class Login {
   }
 
   /**
-   * Presses Tab key on Role textbox Name First Name element
-   * @param {string} [key='Tab'] - The key to press
+   * Clicks on element with selector: role=textbox[name="Last Name"]
    * @returns {Promise<void>}
    */
-  async pressTextboxFirstNameTab(key: string = 'Tab'): Promise<void> {
-    await this.page.locator('role=textbox[name="First Name"]').press(key);
+  async clickTextboxLastName(): Promise<void> {
+    await waitAndClick(this.page, 'role=textbox[name="Last Name"]');
   }
 
   /**
    * Fills the Role textbox Name Last Name field with the provided value
-   * @param {string} [value='test'] - The value to enter in the field
+   * @param {string} [value='user'] - The value to enter in the field
    * @returns {Promise<void>}
    */
-  async fillTextboxLastName(value: string = 'test'): Promise<void> {
+  async fillTextboxLastName(value: string = 'user'): Promise<void> {
     await waitAndFill(this.page, 'role=textbox[name="Last Name"]', value);
   }
 
   /**
-   * Presses Tab key on Role textbox Name Last Name element
-   * @param {string} [key='Tab'] - The key to press
+   * Clicks on element with selector: role=textbox[name="Password"]
    * @returns {Promise<void>}
    */
-  async pressTextboxLastNameTab(key: string = 'Tab'): Promise<void> {
-    await this.page.locator('role=textbox[name="Last Name"]').press(key);
+  async clickTextboxPassword(): Promise<void> {
+    await waitAndClick(this.page, 'role=textbox[name="Password"]');
   }
 
   /**
@@ -285,6 +305,14 @@ export class Login {
   }
 
   /**
+   * Clicks on element with selector: text=Select Hospital
+   * @returns {Promise<void>}
+   */
+  async clickTextSelectGroup(): Promise<void> {
+    await waitAndClick(this.page, 'text=Select Group');
+  }
+
+  /**
    * Clicks on element with selector: role=textbox[name="Phone"]
    * @returns {Promise<void>}
    */
@@ -294,10 +322,10 @@ export class Login {
 
   /**
    * Fills the Role textbox Name Phone field with the provided value
-   * @param {string} [value='1234567890'] - The value to enter in the field
+   * @param {string} [value='8699876867'] - The value to enter in the field
    * @returns {Promise<void>}
    */
-  async fillTextboxPhone(value: string = '1234567890'): Promise<void> {
+  async fillTextboxPhone(value: string = '8699876867'): Promise<void> {
     await waitAndFill(this.page, 'role=textbox[name="Phone"]', value);
   }
 
@@ -307,6 +335,22 @@ export class Login {
    */
   async clickButtonNext(): Promise<void> {
     await waitAndClick(this.page, 'role=button[name="Next"]');
+  }
+
+  /**
+   * Clicks on element with selector: role=heading[name="Add User"]
+   * @returns {Promise<void>}
+   */
+  async clickHeadingAddUser(): Promise<void> {
+    await waitAndClick(this.page, 'role=heading[name="Add User"]');
+  }
+
+  /**
+   * Clicks on element with selector: text=Application Access
+   * @returns {Promise<void>}
+   */
+  async clickTextApplicationAccess(): Promise<void> {
+    await waitAndClick(this.page, 'text=Application Access');
   }
 
   /**
@@ -326,6 +370,7 @@ export class Login {
     await this.page.locator('role=combobox >> nth=0').selectOption(value);
   }
 
+ 
   /**
    * Clicks on element with selector: text=Select Hospital
    * @returns {Promise<void>}
@@ -333,13 +378,52 @@ export class Login {
   async clickTextSelectHospital(): Promise<void> {
     await waitAndClick(this.page, 'text=Select Hospital');
   }
-
   /**
    * Clicks on element with selector: role=list >> text=C1002 - Test Company [
    * @returns {Promise<void>}
    */
   async clickListTextCTestCompany(): Promise<void> {
     await waitAndClick(this.page, 'role=list >> text=C1002 - Test Company [');
+  }
+
+  /**
+   * Clicks on element with selector: app-create-users
+   * @returns {Promise<void>}
+   */
+  async clickappCreateUsers(): Promise<void> {
+    await waitAndClick(this.page, 'app-create-users');
+  }
+
+  /**
+   * Checks #radio checkbox/radio
+   * @returns {Promise<void>}
+   */
+  async checkradio(): Promise<void> {
+    await this.page.locator('#radio').check();
+  }
+
+  /**
+   * Checks role=checkbox checkbox/radio
+   * @returns {Promise<void>}
+   */
+  async checkCheckboxNth(): Promise<void> {
+    await this.page.locator('role=checkbox').nth(1).check();
+  }
+
+  /**
+   * Clicks on element with selector: text=C1011 ECU Health
+   * @returns {Promise<void>}
+   */
+  async clickTextCEcuHealth(): Promise<void> {
+    await waitAndClick(this.page, 'text=C1011 ECU Health');
+  }
+
+  /**
+   * Clicks on element with selector: app-create-users div >> text=Application Access Vita Role
+   * @returns {Promise<void>}
+   */
+  async clickAppCreateUsersDivTextApplicationAccessVitaRole(): Promise<void> {
+    await waitAndClick(this.page, 'app-create-users div >> text=Application Access Vita Role');
   }
 
   /**
@@ -357,15 +441,6 @@ export class Login {
    * @returns {Promise<void>}
    */
   async clickButtonOk(): Promise<void> {
-   
     await waitAndClick(this.page, 'role=button[name="Ok"]');
-  }
-
-  /**
-   * Checks #radio checkbox/radio
-   * @returns {Promise<void>}
-   */
-  async checkradio(): Promise<void> {
-    await this.page.locator('#radio').check();
   }
 }

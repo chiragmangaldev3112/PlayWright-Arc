@@ -163,7 +163,7 @@
             "email": "{{requestData.email}}"
           },
           "expectedCount": 1,
-          "compareWith": "requestData",
+          "compareWith": "rbfdequestData",
           "expectedData": {
             "username": "username",
             "email": "email",

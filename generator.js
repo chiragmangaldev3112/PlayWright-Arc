@@ -747,12 +747,15 @@ function generateTest(steps, testName = 'test', pageClassName = 'GeneratedPage')
 import { ${pageClassName} } from '@pages/${pageClassName}';
 import { logger } from '@utils/core/logger';
 
-/**
- * ${testDescriptionText}
- * @test ${testPrefix} test
- * @tags ${tags}
- */
-test('${testName} ${tags}', async ({ page }, testInfo) => {
+test.describe('${pageClassName} Tests - Chromium Only', () => {
+  test.skip(({ browserName }) => browserName !== 'chromium', 'Only run on Chromium');
+
+  /**
+   * ${testDescriptionText}
+   * @test ${testPrefix} test
+   * @tags ${tags}
+   */
+  test('${testName} ${tags}', async ({ page }, testInfo) => {
   // Initialize page object
   const ${pageClassName.toLowerCase()} = new ${pageClassName}(page);
   
@@ -785,6 +788,7 @@ test('${testName} ${tags}', async ({ page }, testInfo) => {
     logger.testEnd('${testName} test', 'failed', Date.now());
     throw error;
   }
+  });
 });`;
 }
 

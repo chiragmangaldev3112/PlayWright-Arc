@@ -19,7 +19,13 @@ export async function waitAndClick(
     logger.info(`✅ Successfully clicked on element: ${selector}`);
   } catch (error) {
     logger.error(`❌ Failed to interact with element: ${selector}`);
-    await page.screenshot({ path: 'element-interaction-error.png' });
+    try {
+      if (!page.isClosed()) {
+        await page.screenshot({ path: 'element-interaction-error.png' });
+      }
+    } catch (screenshotError) {
+      logger.warn('Could not capture screenshot - page may be closed');
+    }
     throw error;
   }
 }
@@ -43,7 +49,13 @@ export async function waitAndFill(
     logger.info(`✅ Successfully filled input: ${selector}`);
   } catch (error) {
     logger.error(`❌ Failed to fill input: ${selector}`);
-    await page.screenshot({ path: 'fill-input-error.png' });
+    try {
+      if (!page.isClosed()) {
+        await page.screenshot({ path: 'fill-input-error.png' });
+      }
+    } catch (screenshotError) {
+      logger.warn('Could not capture screenshot - page may be closed');
+    }
     throw error;
   }
 }

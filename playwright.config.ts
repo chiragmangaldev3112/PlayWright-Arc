@@ -118,21 +118,24 @@ export default defineConfig({
       testMatch: /.*\.(spec|test)\.ts$/,
     },
     
-    {
-      name: 'firefox-desktop',
-      use: { 
-        ...devices['Desktop Firefox'] 
+    // Firefox and WebKit projects - only run if MULTI_BROWSER is enabled
+    ...(process.env.MULTI_BROWSER === 'true' ? [
+      {
+        name: 'firefox-desktop',
+        use: { 
+          ...devices['Desktop Firefox'] 
+        },
+        testMatch: /.*\.(spec|test)\.ts$/,
       },
-      testMatch: /.*\.(spec|test)\.ts$/,
-    },
-    
-    {
-      name: 'webkit-desktop',
-      use: { 
-        ...devices['Desktop Safari'] 
+      
+      {
+        name: 'webkit-desktop',
+        use: { 
+          ...devices['Desktop Safari'] 
+        },
+        testMatch: /.*\.(spec|test)\.ts$/,
       },
-      testMatch: /.*\.(spec|test)\.ts$/,
-    },
+    ] : []),
 
     // Mobile Devices - Mobile Web Testing
     {

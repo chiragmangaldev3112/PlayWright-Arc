@@ -25,7 +25,9 @@
     "install:deps": "playwright install-deps",
     "clean:reports": "rm -rf playwright-report test-results allure-results",
     "pretest": "npm run lint && npm run format:check",
-    "posttest": "npm run test:report"
+    "posttest": "npm run test:report",
+    "jira:generate": "ts-node scripts/jira-test-generator.ts",
+    "jira:validate": "ts-node scripts/jira-test-generator.ts --validate-only"
   },
   "keywords": [
     "playwright",
@@ -42,6 +44,7 @@
   "devDependencies": {
     "@playwright/test": "^1.40.0",
     "@types/node": "^20.19.11",
+    "@types/pg": "^8.10.9",
     "@types/uuid": "^10.0.0",
     "@typescript-eslint/eslint-plugin": "^6.13.0",
     "@typescript-eslint/parser": "^6.13.0",
@@ -54,18 +57,18 @@
     "prettier": "^3.1.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.2",
-    "uuid": "^11.1.0",
-    "@types/pg": "^8.10.9"
+    "uuid": "^11.1.0"
   },
   "dependencies": {
+    "axios": "^1.6.2",
     "chokidar": "^4.0.3",
     "execa": "^9.6.0",
     "minimist": "^1.2.8",
-    "winston": "^3.11.0",
-    "pg": "^8.11.3",
     "mysql2": "^3.6.5",
+    "pg": "^8.11.3",
+    "sqlite": "^5.1.1",
     "sqlite3": "^5.1.6",
-    "sqlite": "^5.1.1"
+    "winston": "^3.11.0"
   },
   "engines": {
     "node": ">=18.0.0",
